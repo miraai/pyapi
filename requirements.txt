@@ -1,0 +1,13 @@
+appdirs==1.4.3
+django==1.10.5
+djangorestframework==3.5.3
+geopy==1.11.0
+gunicorn==19.7.1
+pbr==1.10.0
+psycopg2==2.7.1
+py==1.4.32
+pyparsing==2.1.10
+pytest-capturelog==0.7
+python-dateutil==2.6.0
+six==1.10.0
+bcrypt==3.1.6
