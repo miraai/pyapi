@@ -1,4 +1,4 @@
-from models import User, Posts, PostsLike
+from api.models import User, Posts, PostsLike
 from django.db import IntegrityError, OperationalError, DatabaseError
 
 import bcrypt
@@ -7,7 +7,8 @@ def register_user(email, password):
   try:
     # hash the password
     hash_pwd = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    user = User(email = email, password = hash_pwd)
+    # We need to decode hashed password so we can save it as a pure string
+    user = User(email = email, password = hash_pwd.decode('utf-8'))
     user.save()
   except (IntegrityError, OperationalError, DatabaseError) as error:
     return None, error.message
@@ -21,8 +22,16 @@ def check_user(email, password):
     if not user:
       return None, 'User doesn\'t exist'
   
-    # Check password
-    valid_pwd = bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8'))
+    # Before comparing passwords we must encode them with utf-8
+    input_pwd = password.encode('utf-8')
+    hashed_pwd = user.password.encode('utf-8')
+    print(type(input_pwd))
+    print(input_pwd)
+    print('------------')
+    print(type(hashed_pwd))
+    print(hashed_pwd)
+    # Check encoded passwords
+    valid_pwd = bcrypt.checkpw(input_pwd, hashed_pwd)
     if not valid_pwd:
       return None, 'Password incorrect'
 
@@ -43,14 +52,25 @@ def create_post(subject, content, user_id):
 
 def get_post(post_id):
   try:
-    post = Post.objects.get(id__exact = post_id)
+    post = Posts.objects.get(id__exact = post_id)
     if not post:
       return None, 'Post not found'
+
+    post = {
+      'id': post.id,
+      'subject': post.subject,
+      'content': post.content,
+      'num_like': 0
+    }
+
+    post_like = PostsLike.objects.filter(post_id__exact = post_id, liked = True).count()
+    if post_like:
+      post['num_like'] = post_like
 
   except (IntegrityError, OperationalError, DatabaseError) as error:
     return None, error.message
 
-  return post
+  return post, None
 
 def like_post(post_id, user_id):
   try:
@@ -64,10 +84,10 @@ def like_post(post_id, user_id):
       liked_post = PostsLike.objects.filter(post_id = post_id, user_id = user_id).first()
       # Like didn't exist, create it
       if not liked_post:
-        like = PostsLike(liked = True)
-        like.post_id = post_id
-        like.user_id = user_id
-        like.save()
+        liked_post = PostsLike(liked = True)
+        liked_post.post_id = post_id
+        liked_post.user_id = user_id
+        liked_post.save()
       else:
         # If the post is liked, unlike it
         if liked_post.liked:

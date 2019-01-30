@@ -1,5 +1,5 @@
 from django.conf import settings
-from jwt import decode, encode, PyJWTError
+from jwt import decode, encode, PyJWTError, ExpiredSignatureError
 
 import time
 
@@ -15,7 +15,7 @@ def encode_jwt(user_id, user_email):
     }
     encoded = encode(payload, settings.JWT_KEY, algorithm='HS256')
   except PyJWTError as error:
-    return None, error.message
+    return None, 'Error occured while validating JWT'
     
   return encoded, None
 
@@ -23,6 +23,9 @@ def decode_jwt(payload):
   try:
     decoded = decode(payload, settings.JWT_KEY, algorithm='HS256')
   except PyJWTError as error:
-    return None, error.message
+    if isinstance(error, ExpiredSignatureError):
+      return None, 'JWT Expired'
+
+    return None, 'Error occured while validating JWT'
   
   return decoded, None

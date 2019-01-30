@@ -1,8 +1,8 @@
 from django.db import models
 
 class User(models.Model):
-  email = models.EmailField()
-  password = models.CharField(max_length=35, blank=False)
+  email = models.CharField(max_length=100, blank=False, unique=True, required=True)
+  password = models.CharField(max_length=100, blank=False, required=True)
   created_at = models.DateTimeField(auto_now_add=True)
  
   class Meta:

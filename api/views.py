@@ -4,7 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 
 import json
-import database, auth
+from api import database, auth
+#import api.database, api.auth
 
 def index(request):
   return JsonResponse({"status": "Hello World"})
@@ -26,8 +27,6 @@ def register_user(request):
         'message': 'Email or password not provided'
       }, status = 400)
     
-    # TODO@
-    # Register the user
     user, error = database.register_user(json_data['email'], json_data['password'])
     if error:
       # Duplicate email address error
@@ -92,7 +91,7 @@ def login_user(request):
   }, status = 405)
 
 @csrf_exempt
-def post(request):
+def post_content(request):
   # User must be logged in
   access_token = request.META['HTTP_AUTHORIZATION']
   jwt_data, jwt_error = auth.decode_jwt(access_token)
@@ -131,10 +130,16 @@ def post(request):
     }, status = 201)
 
   elif request.method == 'GET':
+    post_id = request.GET['post_id']
+
+    post, post_error = database.get_post(post_id)
+    if post_error:
+      return JsonResponse({
+        'message': post_error
+      }, status = 400)
+
     # Get post, accept query param
-    return JsonResponse({
-      'status': 'Post info'
-    }, status = 200)
+    return JsonResponse(post, status = 200)
 
   return JsonResponse({
     'message': 'HTTP method not allowed'
