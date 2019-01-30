@@ -4,11 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 
 import json
-from api import database, auth
-#import api.database, api.auth
-
-def index(request):
-  return JsonResponse({"status": "Hello World"})
+from api import database, auth, gateway
 
 @csrf_exempt
 def register_user(request):
@@ -27,10 +23,24 @@ def register_user(request):
         'message': 'Email or password not provided'
       }, status = 400)
     
-    user, error = database.register_user(json_data['email'], json_data['password'])
-    if error:
+    email = json_data['email']
+    password = json_data['password']
+
+    # Check email authenticity
+    email_check, email_error = gateway.check_email_hunter(email)
+    if email_error:
+      return JsonResponse({
+        'message': email_error
+      }, status = 400)
+    
+    # Uncomment for useless data in terminal
+    # gateway.user_enrichment_clearbit(email)
+    
+    # Save user to the database
+    user, user_error = database.register_user(email, password)
+    if user_error:
       # Duplicate email address error
-      if isinstance(error, IntegrityError):
+      if isinstance(user_error, IntegrityError):
         return JsonResponse({
           'message': 'User already exists'
         }, status = 500)
@@ -66,10 +76,10 @@ def login_user(request):
       }, status = 400)
 
     # Check if the user exists
-    user, error = database.check_user(json_data['email'], json_data['password'])
-    if error:
+    user, user_error = database.check_user(json_data['email'], json_data['password'])
+    if user_error:
       return JsonResponse({
-        'message': error
+        'message': user_error
       }, status = 400)
 
     # Create JWT and attach it to an Auth header

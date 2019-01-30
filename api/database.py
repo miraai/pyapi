@@ -11,7 +11,7 @@ def register_user(email, password):
     user = User(email = email, password = hash_pwd.decode('utf-8'))
     user.save()
   except (IntegrityError, OperationalError, DatabaseError) as error:
-    return None, error.message
+    return None, error
 
   return user, None
 
@@ -25,18 +25,19 @@ def check_user(email, password):
     # Before comparing passwords we must encode them with utf-8
     input_pwd = password.encode('utf-8')
     hashed_pwd = user.password.encode('utf-8')
-    print(type(input_pwd))
-    print(input_pwd)
-    print('------------')
-    print(type(hashed_pwd))
-    print(hashed_pwd)
+    # print(type(input_pwd))
+    # print(input_pwd)
+    # print('------------')
+    # print(type(hashed_pwd))
+    # print(hashed_pwd)
+    
     # Check encoded passwords
     valid_pwd = bcrypt.checkpw(input_pwd, hashed_pwd)
     if not valid_pwd:
       return None, 'Password incorrect'
 
   except (IntegrityError, OperationalError, DatabaseError) as error:
-    return None, error.message
+    return None, 'Something went wrong'
 
   return user, None
   
@@ -46,7 +47,7 @@ def create_post(subject, content, user_id):
     post.user_id = user_id
     post.save()
   except (IntegrityError, OperationalError, DatabaseError) as error:
-    return None, error
+    return None, 'Something went wrong'
   
   return post, None
 
@@ -68,7 +69,7 @@ def get_post(post_id):
       post['num_like'] = post_like
 
   except (IntegrityError, OperationalError, DatabaseError) as error:
-    return None, error.message
+    return None, 'Something went wrong'
 
   return post, None
 
@@ -99,10 +100,7 @@ def like_post(post_id, user_id):
           liked_post.save()
     
   except (IntegrityError, OperationalError, DatabaseError) as error:
-    return None, error.message  
+    return None, 'Something went wrong'  
     
   return liked_post, None
-  
-def unlike_post():
-  pass
 
