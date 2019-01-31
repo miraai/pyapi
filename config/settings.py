@@ -12,10 +12,10 @@ JWT_EXPIRE = 900 # 15 mins
 # Committing to pushing secrets
 # Email hunter
 EMAIL_HUNTER_BASE_URL = 'https://api.hunter.io/v2/'
-EMAIL_HUNTER_API_KEY = '13d09295500e119264cf6046778df4853b61c997'
+EMAIL_HUNTER_API_KEY = 'EMAIL_HUNTER_API_KEY'
 # ClearBit Enrichment
 CLEARBIT_BASE_URL = 'https://person.clearbit.com/v2/'
-CLEARBIT_API_KEY = 'sk_785aa1025b1ba132fbeeca04c1cb2acb'
+CLEARBIT_API_KEY = 'CLEARBIT_API_KEY'
 INSTALLED_APPS = (
     # 'django.contrib.auth',
     'django.contrib.contenttypes',
